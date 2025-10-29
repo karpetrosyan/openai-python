@@ -1,6 +1,6 @@
-#!/usr/bin/env uv run
+#!/usr/bin/env uv run --no-config
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.8"
 # dependencies = [
 #     "textual",
 #     "numpy",
