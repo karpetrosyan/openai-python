@@ -1,14 +1,4 @@
 #!/usr/bin/env uv run
-####################################################################
-# Sample TUI app with a push to talk interface to the Realtime API #
-# If you have `uv` installed and the `OPENAI_API_KEY`              #
-# environment variable set, you can run this example with just     #
-#                                                                  #
-# `./examples/realtime/push_to_talk_app.py`                        #
-#                                                                  #
-# On Mac, you'll also need `brew install portaudio ffmpeg`           #
-####################################################################
-#
 # /// script
 # requires-python = ">=3.9"
 # dependencies = [
@@ -23,6 +13,15 @@
 # [tool.uv.sources]
 # openai = { path = "../../", editable = true }
 # ///
+####################################################################
+# Sample TUI app with a push to talk interface to the Realtime API #
+# If you have `uv` installed and the `OPENAI_API_KEY`              #
+# environment variable set, you can run this example with just     #
+#                                                                  #
+# `./examples/realtime/push_to_talk_app.py`                        #
+#                                                                  #
+# On Mac, you'll also need `brew install portaudio ffmpeg`         #
+####################################################################
 from __future__ import annotations
 
 import base64
@@ -38,8 +37,8 @@ from textual.reactive import reactive
 from textual.containers import Container
 
 from openai import AsyncOpenAI
-from openai.types.realtime.session import Session
 from openai.resources.realtime.realtime import AsyncRealtimeConnection
+from openai.types.realtime.session_update_event import Session
 
 
 class SessionDisplay(Static):
@@ -176,8 +175,9 @@ class RealtimeApp(App[None]):
                 if event.type == "session.created":
                     self.session = event.session
                     session_display = self.query_one(SessionDisplay)
-                    assert event.session.id is not None
-                    session_display.session_id = event.session.id
+                    # id comes with the response, but doesn't appear in the type definition
+                    assert event.session.id is not None  # type: ignore
+                    session_display.session_id = event.session.id  # type: ignore
                     continue
 
                 if event.type == "session.updated":
@@ -272,7 +272,7 @@ class RealtimeApp(App[None]):
                 self.should_send_audio.clear()
                 status_indicator.is_recording = False
 
-                if self.session and self.session.turn_detection is None:
+                if self.session and hasattr(self.session, "turn_detection") and self.session.turn_detection is None:
                     # The default in the API is that the model will automatically detect when the user has
                     # stopped talking and then start responding itself.
                     #
